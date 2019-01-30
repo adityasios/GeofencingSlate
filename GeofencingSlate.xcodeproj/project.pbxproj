@@ -12,6 +12,10 @@
 		40626C9E220188BD00A8E74B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40626C9C220188BD00A8E74B /* Main.storyboard */; };
 		40626CA0220188BF00A8E74B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40626C9F220188BF00A8E74B /* Assets.xcassets */; };
 		40626CA3220188BF00A8E74B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40626CA1220188BF00A8E74B /* LaunchScreen.storyboard */; };
+		40626CAB220188DC00A8E74B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 40626CAA220188DC00A8E74B /* README.md */; };
+		40626CAD22018CA900A8E74B /* SettingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40626CAC22018CA900A8E74B /* SettingVC.swift */; };
+		40626CB022019C7100A8E74B /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40626CAF22019C7100A8E74B /* CoreLocation.framework */; };
+		40626CB22201C06F00A8E74B /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40626CB12201C06F00A8E74B /* Helper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +26,10 @@
 		40626C9F220188BF00A8E74B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		40626CA2220188BF00A8E74B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		40626CA4220188BF00A8E74B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		40626CAA220188DC00A8E74B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		40626CAC22018CA900A8E74B /* SettingVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingVC.swift; sourceTree = "<group>"; };
+		40626CAF22019C7100A8E74B /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		40626CB12201C06F00A8E74B /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40626CB022019C7100A8E74B /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,8 +47,10 @@
 		40626C8C220188BD00A8E74B = {
 			isa = PBXGroup;
 			children = (
+				40626CAA220188DC00A8E74B /* README.md */,
 				40626C97220188BD00A8E74B /* GeofencingSlate */,
 				40626C96220188BD00A8E74B /* Products */,
+				40626CAE22019C7100A8E74B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,14 +65,24 @@
 		40626C97220188BD00A8E74B /* GeofencingSlate */ = {
 			isa = PBXGroup;
 			children = (
+				40626CB12201C06F00A8E74B /* Helper.swift */,
 				40626C98220188BD00A8E74B /* AppDelegate.swift */,
 				40626C9A220188BD00A8E74B /* ViewController.swift */,
+				40626CAC22018CA900A8E74B /* SettingVC.swift */,
 				40626C9C220188BD00A8E74B /* Main.storyboard */,
 				40626C9F220188BF00A8E74B /* Assets.xcassets */,
 				40626CA1220188BF00A8E74B /* LaunchScreen.storyboard */,
 				40626CA4220188BF00A8E74B /* Info.plist */,
 			);
 			path = GeofencingSlate;
+			sourceTree = "<group>";
+		};
+		40626CAE22019C7100A8E74B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				40626CAF22019C7100A8E74B /* CoreLocation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -124,6 +145,7 @@
 			files = (
 				40626CA3220188BF00A8E74B /* LaunchScreen.storyboard in Resources */,
 				40626CA0220188BF00A8E74B /* Assets.xcassets in Resources */,
+				40626CAB220188DC00A8E74B /* README.md in Resources */,
 				40626C9E220188BD00A8E74B /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -136,7 +158,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				40626C9B220188BD00A8E74B /* ViewController.swift in Sources */,
+				40626CAD22018CA900A8E74B /* SettingVC.swift in Sources */,
 				40626C99220188BD00A8E74B /* AppDelegate.swift in Sources */,
+				40626CB22201C06F00A8E74B /* Helper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -285,11 +309,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = RPK4XC758S;
 				INFOPLIST_FILE = GeofencingSlate/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sl.geo.GeofencingSlate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sl.geo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -303,11 +328,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = RPK4XC758S;
 				INFOPLIST_FILE = GeofencingSlate/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sl.geo.GeofencingSlate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sl.geo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
