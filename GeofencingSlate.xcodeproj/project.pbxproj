@@ -16,6 +16,7 @@
 		40626CAB220188DC00A8E74B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 40626CAA220188DC00A8E74B /* README.md */; };
 		40626CB022019C7100A8E74B /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40626CAF22019C7100A8E74B /* CoreLocation.framework */; };
 		40626CB22201C06F00A8E74B /* Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40626CB12201C06F00A8E74B /* Helper.swift */; };
+		4098A0E42205BDFD00371D33 /* SetCentre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4098A0E32205BDFC00371D33 /* SetCentre.swift */; };
 		E370B9F7A09342B51FFE7BB8 /* Pods_GeofencingSlate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEBF6E58F31CD1F64B8B90EF /* Pods_GeofencingSlate.framework */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		40626CAA220188DC00A8E74B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		40626CAF22019C7100A8E74B /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		40626CB12201C06F00A8E74B /* Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helper.swift; sourceTree = "<group>"; };
+		4098A0E32205BDFC00371D33 /* SetCentre.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCentre.swift; sourceTree = "<group>"; };
 		5F7B7A709D80063C31A748B0 /* Pods-GeofencingSlate.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GeofencingSlate.release.xcconfig"; path = "Pods/Target Support Files/Pods-GeofencingSlate/Pods-GeofencingSlate.release.xcconfig"; sourceTree = "<group>"; };
 		630860CC26D578E950438C05 /* Pods-GeofencingSlate.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GeofencingSlate.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GeofencingSlate/Pods-GeofencingSlate.debug.xcconfig"; sourceTree = "<group>"; };
 		AEBF6E58F31CD1F64B8B90EF /* Pods_GeofencingSlate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GeofencingSlate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +77,7 @@
 				40626C98220188BD00A8E74B /* AppDelegate.swift */,
 				40626C9A220188BD00A8E74B /* ViewController.swift */,
 				40108D28220384F500BE166E /* SettingVC.swift */,
+				4098A0E32205BDFC00371D33 /* SetCentre.swift */,
 				40626C9C220188BD00A8E74B /* Main.storyboard */,
 				40626C9F220188BF00A8E74B /* Assets.xcassets */,
 				40626CA1220188BF00A8E74B /* LaunchScreen.storyboard */,
@@ -228,6 +231,7 @@
 				40108D29220384F500BE166E /* SettingVC.swift in Sources */,
 				40626C99220188BD00A8E74B /* AppDelegate.swift in Sources */,
 				40626CB22201C06F00A8E74B /* Helper.swift in Sources */,
+				4098A0E42205BDFD00371D33 /* SetCentre.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -9,8 +9,6 @@
 
 import UIKit
 import MapKit
-import GooglePlaces
-import GoogleMaps
 
 class SettingVC: UITableViewController {
     
@@ -18,17 +16,27 @@ class SettingVC: UITableViewController {
     @IBOutlet weak var lblCentre: UILabel!
     @IBOutlet weak var lblRadius: UILabel!
     
+    
+    
     // MARK: - VC LIFE CYCLE
     override func viewDidLoad() {
         super.viewDidLoad()
         initMethod()
     }
     
-    private func initMethod() {
-        setMapViewRegion()
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        sizeHeaderToFit()
     }
     
     
+    // MARK: - INIT METHOD
+    private func initMethod() {
+        title = "Settings"
+        setMapViewRegion()
+    }
+    
+
     private func setMapViewRegion() {
         
         let startCoord : CLLocationCoordinate2D = mapView.userLocation.coordinate
@@ -38,40 +46,41 @@ class SettingVC: UITableViewController {
         region = mapView.regionThatFits(region)
         mapView.setRegion(region, animated: true)
     }
+    
+    // MARK: - SET UI
+    private func setUI() {
+    }
+    
+    private func sizeHeaderToFit() {
+        
+        let headerView = tableView.tableHeaderView!
+        headerView.setNeedsLayout()
+        headerView.layoutIfNeeded()
+        
+        let height =  ScreenSize.SCREEN_HEIGHT - 6*50
+        var frame = headerView.frame
+        frame.size.height = height
+        headerView.frame = frame
+        tableView.tableHeaderView = headerView
+    }
 }
+
+
+
 
 // MARK: - DELEGATES
 extension SettingVC  {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row == 0 {
-            showAutoComplete()
+            let set = storyboard?.instantiateViewController(withIdentifier: "SetCentre") as! SetCentre
+            navigationController?.pushViewController(set, animated: true)
         }
     }
 }
 
 
-// MARK: - AUTOCOMPLETE
-extension SettingVC : GMSAutocompleteViewControllerDelegate {
-    
-    func showAutoComplete() {
-        let autocompleteController = GMSAutocompleteViewController()
-        autocompleteController.delegate = self
-        navigationController?.pushViewController(autocompleteController, animated: false)
-        
-    }
-    
-    
-    func viewController(_ viewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
-        print("place = \(place.coordinate.latitude) \(place.coordinate.longitude) \(place.formattedAddress!)")
-    }
-    
-    func viewController(_ viewController: GMSAutocompleteViewController, didFailAutocompleteWithError error: Error) {
-        print("error = \(error.localizedDescription)")
-    }
-    
-    func wasCancelled(_ viewController: GMSAutocompleteViewController) {
-        print("wasCancelled")
-        navigationController?.popViewController(animated: false)
-    }
-}
+
+
+
+
 
