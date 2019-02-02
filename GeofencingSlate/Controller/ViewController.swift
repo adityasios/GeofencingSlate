@@ -9,6 +9,7 @@
 import UIKit
 import CoreLocation
 import MapKit
+import SystemConfiguration.CaptiveNetwork
 
 
 
@@ -42,8 +43,22 @@ class ViewController: UIViewController {
         let set = storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
         navigationController?.pushViewController(set, animated: true)
     }
+    
+    
+    @IBAction func btnStatusClicked(_ sender: UIButton) {
+        var ssid: String?
+        if let interfaces = CNCopySupportedInterfaces() as NSArray? {
+            for interface in interfaces {
+                if let interfaceInfo = CNCopyCurrentNetworkInfo(interface as! CFString) as NSDictionary? {
+                    ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String
+                    break
+                }
+            }
+        }
+        
+        print("ssid \(ssid ?? "no wifi")")
+    }
 }
-
 
 
 

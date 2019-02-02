@@ -31,6 +31,9 @@ Organge & White
 
 
 
+Enable access wifi information
+
+
 
 
 
