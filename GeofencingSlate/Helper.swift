@@ -7,11 +7,10 @@
 //
 
 import Foundation
-import UIKit
+
 
 struct Helper {
-    
-    
+   static let googleApiKey = "AIzaSyBV2FzDnZaAZHOzfoNL0YFmY6jTSW5_524"
 }
 
 

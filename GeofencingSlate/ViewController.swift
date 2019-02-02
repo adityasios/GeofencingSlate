@@ -8,18 +8,39 @@
 
 import UIKit
 import CoreLocation
-
+import MapKit
 
 
 
 class ViewController: UIViewController {
     
+    @IBOutlet weak var barSetting: UIBarButtonItem!
+    @IBOutlet weak var mapView: MKMapView!
     let locationManager : CLLocationManager = CLLocationManager()
+    
     
     // MARK: - VC LIFE CYCLE
     override func viewDidLoad() {
         super.viewDidLoad()
+        initMethod()
+    }
+    
+    private func initMethod() {
         enableLocationServices()
+    }
+    
+    
+    // MARK: - ACTION METHOD
+    @IBAction func btnSettingClicked(_ sender: UIBarButtonItem) {
+        
+        let authorizationStatus = CLLocationManager.authorizationStatus()
+        if authorizationStatus != .authorizedWhenInUse && authorizationStatus != .authorizedAlways {
+            getAlert(titletop: "Error", subtitle: "Please Enable Location Service From Device Settings", tag: 10)
+            return
+        }
+        
+        let set = storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
+        navigationController?.pushViewController(set, animated: true)
     }
 }
 
@@ -27,7 +48,7 @@ class ViewController: UIViewController {
 
 
 
-// MARK: - LOCATION MANAGER
+// MARK: - LOCATION METHODS
 extension ViewController : CLLocationManagerDelegate {
     
     
@@ -47,38 +68,85 @@ extension ViewController : CLLocationManagerDelegate {
             print("restricted")
             self.getAlert(titletop: "Error", subtitle: "Please Enable Location Service From App Settings", tag: 10)
         case .authorizedWhenInUse:
-            print("restricted")
-            escalateLocationServiceAuthorization()
+            print("authorizedWhenInUse")
+            startReceivingLocationChanges()
         case .authorizedAlways:
             print("authorizedAlways")
-        //enableMyAlwaysFeatures()
+            startReceivingLocationChanges()
+       
         default:
             break
         }
     }
     
-    func escalateLocationServiceAuthorization() {
+    
+    private func startReceivingLocationChanges() {
+        
+        let authorizationStatus = CLLocationManager.authorizationStatus()
+        if authorizationStatus != .authorizedWhenInUse && authorizationStatus != .authorizedAlways {
+            print("User has not authorized access to location information")
+            return
+        }
+        
+        
+        // Configure and start the service.
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.distanceFilter = 100.0  // In meters.
+        locationManager.startUpdatingLocation()
+    }
+    
+    
+    private func escalateLocationServiceAuthorization() {
         locationManager.requestAlwaysAuthorization()
     }
     
     
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        if (status == CLAuthorizationStatus.authorizedAlways || status == CLAuthorizationStatus.authorizedWhenInUse) {
-            print("authorizedAlways")
+    
+    
+   
+    
+    
+    
+    private func setMapViewRegion(last:CLLocation) {
+        
+        let startCoord : CLLocationCoordinate2D = last.coordinate
+        print("map centre (\(startCoord.latitude) \(startCoord.longitude))")
+        
+        var region = MKCoordinateRegion.init(center: startCoord, latitudinalMeters: 100, longitudinalMeters: 100)
+        region = mapView.regionThatFits(region)
+        mapView.setRegion(region, animated: true)
+    }
+    
+    
+    // MARK: - LOCATION DELEGATES
+    private func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if (status == CLAuthorizationStatus.authorizedAlways) {
+            print("didChangeAuthorization - authorizedAlways")
+            startReceivingLocationChanges()
+        }else if (status == CLAuthorizationStatus.authorizedWhenInUse){
+            print("didChangeAuthorization - authorizedWhenInUse")
+            startReceivingLocationChanges()
         }else if (status == CLAuthorizationStatus.denied){
-            print("denied")
+            print("didChangeAuthorization - denied")
         }else if (status == CLAuthorizationStatus.notDetermined){
-            print("notDetermined")
+            print("didChangeAuthorization - notDetermined")
         }
     }
+    
+    
+    func locationManager(_ manager: CLLocationManager,  didUpdateLocations locations: [CLLocation]) {
+        let lastLocation = locations.last!
+        setMapViewRegion(last: lastLocation)
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        if let error = error as? CLError, error.code == .denied {
+            manager.stopUpdatingLocation()
+            return
+        }
+        // Notify the user of any errors.
+    }
 }
-
-
-
-
-
-
-
 
 
 
@@ -102,6 +170,22 @@ extension ViewController  {
         self.present(AC, animated: true, completion:nil)
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
