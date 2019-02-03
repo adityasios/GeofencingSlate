@@ -12,17 +12,22 @@ import GoogleMaps
 import MapKit
 
 
+
+
 protocol SetCentreDelegate: class {
-    func setCentreMonitring(_ loc: CLLocationCoordinate2D?)
+    func setCentreMonitring(_ geod: GeoMod)
 }
 
 
 class SetCentre: UIViewController {
     
+    var geoPass = GeoMod()
     
     weak var delegateSetCentre: SetCentreDelegate?
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var viewSch: UIView!
+    
+    
     
     // MARK: - VC LIFE CYCLE
     override func viewDidLoad() {
@@ -40,9 +45,13 @@ class SetCentre: UIViewController {
     private func initMethod() {
         title = "Add Centre"
         addTapGesture()
-        if let cord = mapView.userLocation.location {
+        
+        if geoPass.geolat != nil && geoPass.geolon != nil {
+            let loc = CLLocationCoordinate2D.init(latitude: geoPass.geolat!, longitude: geoPass.geolat!)
+            setMapViewRegion(loc: loc)
+            setAnnotationOnMap(loc: loc)
+        }else if let cord = mapView.userLocation.location {
             setMapViewRegion(loc: cord.coordinate)
-            setAnnotationOnMap(loc: cord.coordinate)
         }
     }
     
@@ -54,12 +63,7 @@ class SetCentre: UIViewController {
     }
     
     
-    private func setMapViewRegion(loc:CLLocationCoordinate2D) {
-        print("Coord (\(loc.latitude) \(loc.longitude))")
-        var region = MKCoordinateRegion.init(center: loc, latitudinalMeters: 100, longitudinalMeters: 100)
-        region = mapView.regionThatFits(region)
-        mapView.setRegion(region, animated: true)
-    }
+    
     
     
     
@@ -79,20 +83,28 @@ class SetCentre: UIViewController {
     }
     
     @IBAction func btnSaveClicked(_ sender: UIBarButtonItem) {
-        let arrAnot = mapView.annotations.filter { $0 !== mapView.userLocation }
-        if arrAnot.isEmpty {
-            getAlert(titletop: "Error", subtitle: "Please Select Location")
-        }else{
-            delegateSetCentre?.setCentreMonitring(arrAnot.last?.coordinate)
+        if geoPass.geolat != nil && geoPass.geolon != nil  && geoPass.geoAdd != nil{
+            delegateSetCentre?.setCentreMonitring(geoPass)
             navigationController?.popViewController(animated: true)
+        }else{
+            Helper.getAlert(view: self, titletop: "Error", subtitle: "Please Select Location")
         }
     }
 }
 
 
 
-// MARK: - SET PIN , MAP DELEGATES
+// MARK: - MAP METHODS , MAP DELEGATES
 extension SetCentre:MKMapViewDelegate  {
+    
+    private func setMapViewRegion(loc:CLLocationCoordinate2D) {
+        var region = MKCoordinateRegion.init(center: loc, latitudinalMeters: 100, longitudinalMeters: 100)
+        region = mapView.regionThatFits(region)
+        mapView.setRegion(region, animated: true)
+    }
+    
+    
+    
     private func setAnnotationOnMap(loc:CLLocationCoordinate2D) {
         
         //remove pre
@@ -101,12 +113,11 @@ extension SetCentre:MKMapViewDelegate  {
             mapView.removeAnnotations( arrAnot )
         }
         
-        
         //add new
         let annotation = MKPointAnnotation()
         annotation.coordinate = loc
         annotation.title = "Centre"
-        annotation.subtitle = "Monitoring region centre point"
+        annotation.subtitle = geoPass.geoAdd ?? "Monitoring region centre point"
         mapView.addAnnotation(annotation)
     }
     
@@ -115,7 +126,7 @@ extension SetCentre:MKMapViewDelegate  {
         if annotation is MKPointAnnotation {
             let pinAnnotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pincentre")
             pinAnnotationView.pinTintColor = .red
-            pinAnnotationView.isDraggable = true
+            pinAnnotationView.isDraggable = false
             pinAnnotationView.canShowCallout = true
             pinAnnotationView.animatesDrop = true
             return pinAnnotationView
@@ -123,20 +134,6 @@ extension SetCentre:MKMapViewDelegate  {
         
         return nil
         
-    }
-    
-    
-    func mapView(_ mapView: MKMapView,annotationView view: MKAnnotationView,didChange newState:MKAnnotationView.DragState,fromOldState oldState: MKAnnotationView.DragState){
-        switch newState {
-        case .starting:
-            view.dragState = .dragging
-        case .ending, .canceling:
-            if let cord = view.annotation?.coordinate {
-                setMapViewRegion(loc: cord)
-            }
-            view.dragState = .none
-        default: break
-        }
     }
 }
 
@@ -152,34 +149,30 @@ extension SetCentre : GMSAutocompleteViewControllerDelegate {
         navigationController?.present(autocompleteController, animated: true, completion: nil)
     }
     
-    
     func viewController(_ viewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
-        print("place = \(place.coordinate.latitude) \(place.coordinate.longitude) \(place.formattedAddress!)")
+        
+        //save data
+        geoPass.geolat = place.coordinate.latitude
+        geoPass.geolon = place.coordinate.longitude
+        geoPass.geoAdd = place.formattedAddress ?? "Monitoring region centre point"
+        
+        
+        //set map
         setAnnotationOnMap(loc: place.coordinate)
         setMapViewRegion(loc: place.coordinate)
         dismiss(animated: true, completion: nil)
     }
+    
     
     func viewController(_ viewController: GMSAutocompleteViewController, didFailAutocompleteWithError error: Error) {
         print("error = \(error.localizedDescription)")
     }
     
     func wasCancelled(_ viewController: GMSAutocompleteViewController) {
-        print("wasCancelled")
         dismiss(animated: true, completion: nil)
     }
 }
 
-// MARK: - ALERT MANAGER
-extension SetCentre  {
 
-    func getAlert(titletop:String,subtitle:String){
-        
-        let AC = UIAlertController(title: titletop, message: subtitle, preferredStyle: .alert)
-        let okBtn = UIAlertAction(title: "OK", style: .cancel, handler: {(_ action: UIAlertAction) -> Void in
-        })
-        AC.addAction(okBtn)
-        self.present(AC, animated: true, completion:nil)
-    }
-}
+
 

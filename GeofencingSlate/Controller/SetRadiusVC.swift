@@ -17,6 +17,7 @@ protocol SetRadiusDelegate: class {
 
 class SetRadiusVC: UIViewController {
     
+    var geoPass = GeoMod()
     weak var delegateRadCentre: SetRadiusDelegate?
     @IBOutlet weak var txfdRadius: UITextField!
     @IBOutlet weak var lblEnterRad: UILabel!
@@ -29,6 +30,12 @@ class SetRadiusVC: UIViewController {
         setUI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        txfdRadius.becomeFirstResponder()
+    }
+    
+    
     // MARK: - INIT METHOD
     private func initMethod() {
         title = "Add Radius"
@@ -39,13 +46,15 @@ class SetRadiusVC: UIViewController {
         
         //lbl
         let loc = CLLocationManager()
-        lblEnterRad.text = "Enter Monitoring Region Radius \n(max \(Int(loc.maximumRegionMonitoringDistance)) metres)"
+        lblEnterRad.text = "Enter Monitoring Region Radius (max \(Int(loc.maximumRegionMonitoringDistance)) metres)"
         
         //txfd
         txfdRadius.layer.cornerRadius = 4
         txfdRadius.layer.borderColor = UIColor.gray.cgColor
         txfdRadius.layer.borderWidth = 1
-        txfdRadius.becomeFirstResponder()
+        if let rad =  geoPass.geoRadius  {
+            txfdRadius.text = String(rad)
+        }
         addDoneButtonOnKeyboard()
     }
     

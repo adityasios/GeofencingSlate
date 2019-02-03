@@ -18,6 +18,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var barSetting: UIBarButtonItem!
     @IBOutlet weak var mapView: MKMapView!
     let locationManager : CLLocationManager = CLLocationManager()
+    var geoMain = GeoMod()
+    
     
     
     // MARK: - VC LIFE CYCLE
@@ -26,24 +28,33 @@ class ViewController: UIViewController {
         initMethod()
     }
     
+    
     private func initMethod() {
         enableLocationServices()
+        
+        //add monitor saved region
+        if !locationManager.monitoredRegions.isEmpty {
+            if let reg = locationManager.monitoredRegions.first?.identifier , reg == Helper.geoReg {
+                locationManager.stopMonitoring(for: locationManager.monitoredRegions.first!)
+            }
+        }
     }
+    
+    
     
     
     // MARK: - ACTION METHOD
     @IBAction func btnSettingClicked(_ sender: UIBarButtonItem) {
         
         let authorizationStatus = CLLocationManager.authorizationStatus()
-        if authorizationStatus != .authorizedWhenInUse && authorizationStatus != .authorizedAlways {
-            getAlert(titletop: "Error", subtitle: "Please Enable Location Service From Device Settings", tag: 10)
+        if authorizationStatus != .authorizedAlways {
+            getAlert(titletop: "Error", subtitle: "Please Enable Location Service From Device Settings \n For Geo Monitoring Always Autorization Requires", tag: 20)
             return
         }
-        
         let set = storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
+        set.delegateSetSetting = self
         navigationController?.pushViewController(set, animated: true)
     }
-    
     
     @IBAction func btnStatusClicked(_ sender: UIButton) {
         var ssid: String?
@@ -58,6 +69,7 @@ class ViewController: UIViewController {
         
         print("ssid \(ssid ?? "no wifi")")
     }
+    
 }
 
 
@@ -78,7 +90,7 @@ extension ViewController : CLLocationManagerDelegate {
         switch CLLocationManager.authorizationStatus() {
         case .notDetermined:
             print("notDetermined")
-            locationManager.requestWhenInUseAuthorization()
+            locationManager.requestAlwaysAuthorization()
         case .restricted, .denied:
             print("restricted")
             self.getAlert(titletop: "Error", subtitle: "Please Enable Location Service From App Settings", tag: 10)
@@ -88,7 +100,7 @@ extension ViewController : CLLocationManagerDelegate {
         case .authorizedAlways:
             print("authorizedAlways")
             startReceivingLocationChanges()
-       
+            
         default:
             break
         }
@@ -115,53 +127,171 @@ extension ViewController : CLLocationManagerDelegate {
         locationManager.requestAlwaysAuthorization()
     }
     
-    
-    
-    
-   
-    
-    
-    
-    private func setMapViewRegion(last:CLLocation) {
-        
-        let startCoord : CLLocationCoordinate2D = last.coordinate
-        print("map centre (\(startCoord.latitude) \(startCoord.longitude))")
-        
-        var region = MKCoordinateRegion.init(center: startCoord, latitudinalMeters: 100, longitudinalMeters: 100)
+    private func setMapViewRegion(last:CLLocationCoordinate2D) {
+        var region = MKCoordinateRegion.init(center: last, latitudinalMeters: 100, longitudinalMeters: 100)
         region = mapView.regionThatFits(region)
         mapView.setRegion(region, animated: true)
     }
     
     
+    
     // MARK: - LOCATION DELEGATES
     private func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if (status == CLAuthorizationStatus.authorizedAlways) {
-            print("didChangeAuthorization - authorizedAlways")
             startReceivingLocationChanges()
         }else if (status == CLAuthorizationStatus.authorizedWhenInUse){
-            print("didChangeAuthorization - authorizedWhenInUse")
             startReceivingLocationChanges()
         }else if (status == CLAuthorizationStatus.denied){
-            print("didChangeAuthorization - denied")
         }else if (status == CLAuthorizationStatus.notDetermined){
-            print("didChangeAuthorization - notDetermined")
         }
     }
     
     
+    
+    
+    
+    
+    
+    
     func locationManager(_ manager: CLLocationManager,  didUpdateLocations locations: [CLLocation]) {
         let lastLocation = locations.last!
-        setMapViewRegion(last: lastLocation)
+        if  !geoMain.isMonitoring {
+            setMapViewRegion(last: lastLocation.coordinate)
+        }
     }
+    
+    
+    
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if let error = error as? CLError, error.code == .denied {
             manager.stopUpdatingLocation()
             return
         }
-        // Notify the user of any errors.
+    }
+    
+    
+    func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
+        print("Welcome to Playa Grande! If the waves are good, you can try surfing!")
+        print("monitored reg start \(locationManager.monitoredRegions.count)")
+    }
+    
+    
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        print("Bye! Hope you had a great day at the beach!")
+        print("monitored reg exit \(locationManager.monitoredRegions.count)")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
+        switch state {
+        case .inside:
+            print("inside")
+        case .outside:
+            print("outside")
+        case .unknown:
+            print("unknown")
+            
+        default:
+            break
+        }
     }
 }
+
+
+
+
+
+
+// MARK: - MKMapViewDelegate
+extension ViewController:MKMapViewDelegate{
+    
+    private func setMapMonitorRegion(_ geod: GeoMod){
+        
+        //remove pre annot
+        let arrAnot = mapView.annotations.filter { $0 !== mapView.userLocation }
+        if !arrAnot.isEmpty {
+            mapView.removeAnnotations( arrAnot )
+        }
+        
+        //add new annot
+        let annotation = MKPointAnnotation()
+        let geoC = CLLocationCoordinate2DMake(geod.geolat!,geod.geolon!)
+        annotation.coordinate = geoC
+        annotation.title = "Centre"
+        annotation.subtitle = geod.geoAdd ?? "Monitoring region centre point"
+        mapView.addAnnotation(annotation)
+        
+        //remove overlays
+        if let overlays = mapView?.overlays {
+            mapView.removeOverlays(overlays)
+        }
+        
+        //add overlays
+        let mkCir = MKCircle.init(center: geoC, radius: CLLocationDistance(geod.geoRadius!))
+        mapView.addOverlay(mkCir)
+        
+        
+        //map region
+        setMapViewRegion(last: geoC)
+    }
+    
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        guard overlay is MKCircle else {return MKOverlayRenderer()}
+        let renderer = MKCircleRenderer(overlay: overlay)
+        renderer.fillColor = UIColor.orange.withAlphaComponent(0.2)
+        renderer.strokeColor = UIColor.orange
+        renderer.lineWidth = 2
+        return renderer
+    }
+    
+    func mapView(_ mapView: MKMapView,viewFor annotation: MKAnnotation) -> MKAnnotationView?{
+        if annotation is MKPointAnnotation {
+            let pinAnnotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "pincentre")
+            pinAnnotationView.pinTintColor = .red
+            pinAnnotationView.isDraggable = false
+            pinAnnotationView.canShowCallout = true
+            pinAnnotationView.animatesDrop = true
+            return pinAnnotationView
+        }
+        return nil
+    }
+}
+
+
+
+
+// MARK: - SetCentreDelegate
+extension ViewController:SetSettingVCDelegate  {
+    func setRegionMonitring(_ geod: GeoMod){
+        
+        print("monitored reg i \(locationManager.monitoredRegions.count)")
+        let geoC = CLLocationCoordinate2DMake(geod.geolat!,geod.geolon!)
+        let geoRegion = CLCircularRegion(center: geoC, radius: CLLocationDistance(geod.geoRadius!), identifier:Helper.geoReg);
+        geoRegion.notifyOnExit = true
+        geoRegion.notifyOnEntry = true
+        locationManager.startMonitoring(for: geoRegion)
+        locationManager.requestState(for: geoRegion)
+        
+        //set mk circle on map
+        setMapMonitorRegion(geod)
+        
+        //set model
+        geoMain = geod
+        geoMain.isMonitoring = true
+    }
+}
+
+
+
+
+
+/*
+ for region in locationManager.monitoredRegions {
+ guard let circularRegion = region as? CLCircularRegion, circularRegion.identifier == geotification.identifier else { continue }
+ locationManager.stopMonitoring(for: circularRegion)
+ }*/
+
+
 
 
 
@@ -173,7 +303,11 @@ extension ViewController  {
         
         let AC = UIAlertController(title: titletop, message: subtitle, preferredStyle: .alert)
         let okBtn = UIAlertAction(title: "OK", style: .cancel, handler: {(_ action: UIAlertAction) -> Void in
+            if tag == 20 {
+                self.escalateLocationServiceAuthorization()
+            }
         })
+        
         AC.addAction(okBtn)
         
         let setBtn = UIAlertAction(title: "Settings", style: .default, handler: {(_ action: UIAlertAction) -> Void in
@@ -185,6 +319,7 @@ extension ViewController  {
         self.present(AC, animated: true, completion:nil)
     }
 }
+
 
 
 

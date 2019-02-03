@@ -10,11 +10,15 @@
 import UIKit
 import MapKit
 
+protocol SetSettingVCDelegate: class {
+    func setRegionMonitring(_ geod: GeoMod)
+}
 
 
 class SettingVC: UITableViewController {
     
     var geo = GeoMod()
+    weak var delegateSetSetting: SetSettingVCDelegate?
     
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var lblCentre: UILabel!
@@ -60,13 +64,23 @@ class SettingVC: UITableViewController {
         headerView.setNeedsLayout()
         headerView.layoutIfNeeded()
         
-        let height =  ScreenSize.SCREEN_HEIGHT - 5*50
+        let height =  ScreenSize.SCREEN_HEIGHT - 5.5*50
         var frame = headerView.frame
         frame.size.height = height
         headerView.frame = frame
         tableView.tableHeaderView = headerView
     }
     
+    // MARK: - BUTTON ACTION
+    @IBAction func btnSaveClicked(_ sender: UIBarButtonItem) {
+        guard let lat = geo.geolat ,let lon = geo.geolat ,let rad =  geo.geoRadius else {
+            Helper.getAlert(view: self, titletop: "Error", subtitle: "Please set mandatory fields (Centre & Radius) for geo monitoring")
+            return
+        }
+        
+        delegateSetSetting?.setRegionMonitring(geo)
+        navigationController?.popViewController(animated: true)
+    }
     
     
     
@@ -76,13 +90,16 @@ class SettingVC: UITableViewController {
         if indexPath.row == 0 {
             let set = storyboard?.instantiateViewController(withIdentifier: "SetCentre") as! SetCentre
             set.delegateSetCentre = self
+            set.geoPass = geo
             navigationController?.pushViewController(set, animated: true)
         }else if indexPath.row == 1 {
             let set = storyboard?.instantiateViewController(withIdentifier: "SetRadiusVC") as! SetRadiusVC
             set.delegateRadCentre = self
+            set.geoPass = geo
             navigationController?.pushViewController(set, animated: true)
         }
     }
+    
 }
 
 
@@ -90,28 +107,42 @@ class SettingVC: UITableViewController {
 // MARK: - CUSTOM DELEGATES
 extension SettingVC: SetCentreDelegate,SetRadiusDelegate {
     
-    func setCentreMonitring(_ loc: CLLocationCoordinate2D?) {
-        geo.geolat = loc?.latitude
-        geo.geolon = loc?.longitude
-        if let lat = geo.geolat,let lon = geo.geolon {
-            lblCentre.text = "(\(lat),\(lon))"
-            setAnnotationOnMap(CLLocationCoordinate2D.init(latitude: lat, longitude: lon))
-        }
+    func setCentreMonitring(_ geod: GeoMod) {
+        geo.geolat = geod.geolat
+        geo.geolon = geod.geolon
+        geo.geoAdd = geod.geoAdd
+        setMapMonitorRegion()
     }
     
+    
+    
     func setRadiusMonitring(_ radius: Int?){
-        
         geo.geoRadius = radius
+        lblRadius.text = "\(geo.geoRadius!) metres"
+        setMapMonitorRegion()
+    }
+    
+    
+    func setMapMonitorRegion(){
         
-        //remove overlays
-        if let overlays = mapView?.overlays {
-            mapView.removeOverlays(overlays)
+        if let lat = geo.geolat,let lon = geo.geolon,let add = geo.geoAdd {
+            lblCentre.text = "\(add)"
+            setAnnotationOnMap(CLLocationCoordinate2D.init(latitude: lat, longitude: lon))
+            
+            
+            if let rad = geo.geoRadius {
+                
+                //remove overlays
+                if let overlays = mapView?.overlays {
+                    mapView.removeOverlays(overlays)
+                }
+                
+                //add overlays
+                let loc = CLLocationCoordinate2D.init(latitude: lat, longitude: lon)
+                let mkCir = MKCircle.init(center: loc, radius: CLLocationDistance(rad))
+                mapView.addOverlay(mkCir)
+            }
         }
-        
-        //add overlays
-        let loc = CLLocationCoordinate2D.init(latitude: geo.geolat!, longitude: geo.geolon!)
-        let mkCir = MKCircle.init(center: loc, radius: CLLocationDistance(geo.geoRadius!))
-        mapView.addOverlay(mkCir)
     }
 }
 
@@ -123,7 +154,6 @@ extension SettingVC: SetCentreDelegate,SetRadiusDelegate {
 // MARK: - DELEGATES
 extension SettingVC : MKMapViewDelegate {
 
-    
     private func setAnnotationOnMap(_ locP: CLLocationCoordinate2D){
         
         //remove pre
@@ -136,12 +166,13 @@ extension SettingVC : MKMapViewDelegate {
         let annotation = MKPointAnnotation()
         annotation.coordinate = locP
         annotation.title = "Centre"
-        annotation.subtitle = "Monitoring region centre point"
+        annotation.subtitle = geo.geoAdd ?? "Monitoring region centre point"
         mapView.addAnnotation(annotation)
         
         //map region
         setMapViewRegion(loc: locP)
     }
+    
     
     
     func mapView(_ mapView: MKMapView,viewFor annotation: MKAnnotation) -> MKAnnotationView?{
@@ -158,7 +189,7 @@ extension SettingVC : MKMapViewDelegate {
     
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-        guard let circelOverLay = overlay as? MKCircle else {return MKOverlayRenderer()}
+        guard overlay is MKCircle else {return MKOverlayRenderer()}
         
         
         let renderer = MKCircleRenderer(overlay: overlay)

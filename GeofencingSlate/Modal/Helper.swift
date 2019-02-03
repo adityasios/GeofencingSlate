@@ -11,6 +11,7 @@ import UIKit
 
 struct Helper {
     static let googleApiKey = "AIzaSyBV2FzDnZaAZHOzfoNL0YFmY6jTSW5_524"
+    static let geoReg = "geoslate"
     
     static  func getAlert(view:UIViewController,titletop:String,subtitle:String){
         let AC = UIAlertController(title: titletop, message: subtitle, preferredStyle: .alert)

@@ -19,6 +19,7 @@
 		4098A0E42205BDFD00371D33 /* SetCentre.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4098A0E32205BDFC00371D33 /* SetCentre.swift */; };
 		4098A0EA22060F7100371D33 /* SetRadiusVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4098A0E922060F7100371D33 /* SetRadiusVC.swift */; };
 		4098A0ED22062D8D00371D33 /* GeoMod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4098A0EC22062D8D00371D33 /* GeoMod.swift */; };
+		4098A0EF2207414A00371D33 /* GeoFence.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 4098A0EE2207414A00371D33 /* GeoFence.gpx */; };
 		E370B9F7A09342B51FFE7BB8 /* Pods_GeofencingSlate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEBF6E58F31CD1F64B8B90EF /* Pods_GeofencingSlate.framework */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		4098A0E922060F7100371D33 /* SetRadiusVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRadiusVC.swift; sourceTree = "<group>"; };
 		4098A0EB22062D2200371D33 /* GeofencingSlate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GeofencingSlate.entitlements; sourceTree = "<group>"; };
 		4098A0EC22062D8D00371D33 /* GeoMod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoMod.swift; sourceTree = "<group>"; };
+		4098A0EE2207414A00371D33 /* GeoFence.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GeoFence.gpx; sourceTree = "<group>"; };
 		5F7B7A709D80063C31A748B0 /* Pods-GeofencingSlate.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GeofencingSlate.release.xcconfig"; path = "Pods/Target Support Files/Pods-GeofencingSlate/Pods-GeofencingSlate.release.xcconfig"; sourceTree = "<group>"; };
 		630860CC26D578E950438C05 /* Pods-GeofencingSlate.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GeofencingSlate.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GeofencingSlate/Pods-GeofencingSlate.debug.xcconfig"; sourceTree = "<group>"; };
 		AEBF6E58F31CD1F64B8B90EF /* Pods_GeofencingSlate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GeofencingSlate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,6 +61,7 @@
 		40626C8C220188BD00A8E74B = {
 			isa = PBXGroup;
 			children = (
+				4098A0EE2207414A00371D33 /* GeoFence.gpx */,
 				40626CAA220188DC00A8E74B /* README.md */,
 				40626C97220188BD00A8E74B /* GeofencingSlate */,
 				40626C96220188BD00A8E74B /* Products */,
@@ -201,6 +204,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4098A0EF2207414A00371D33 /* GeoFence.gpx in Resources */,
 				40626CA3220188BF00A8E74B /* LaunchScreen.storyboard in Resources */,
 				40626CA0220188BF00A8E74B /* Assets.xcassets in Resources */,
 				40626CAB220188DC00A8E74B /* README.md in Resources */,
