@@ -15,6 +15,6 @@ struct GeoMod{
     var geoRadius : Int?
     var wifiName : String?
     var isMonitoring : Bool = false
-    var isInside : Bool = false
+    var isGeoInside : Bool = false
 }
 

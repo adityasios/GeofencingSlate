@@ -28,7 +28,7 @@
                                 <rect key="frame" x="0.0" y="484" width="320" height="40"/>
                                 <color key="backgroundColor" red="1" green="0.57810515169999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Thin" family="Helvetica Neue" pointSize="20"/>
-                                <state key="normal" title="Status"/>
+                                <state key="normal" title="Check Status"/>
                                 <connections>
                                     <action selector="btnStatusClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="S44-6f-zmG"/>
                                 </connections>
@@ -279,6 +279,7 @@
                     <connections>
                         <outlet property="lblCentre" destination="SNW-Df-vwc" id="ySv-Mt-ddq"/>
                         <outlet property="lblRadius" destination="jOe-l1-piG" id="KFW-kZ-H3p"/>
+                        <outlet property="lblWifi" destination="eEI-ns-01I" id="Sqa-iZ-lMf"/>
                         <outlet property="mapView" destination="INM-A7-wDN" id="Ehu-gi-6dp"/>
                     </connections>
                 </tableViewController>

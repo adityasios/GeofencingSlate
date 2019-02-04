@@ -32,15 +32,13 @@ class ViewController: UIViewController {
     private func initMethod() {
         enableLocationServices()
         
-        //add monitor saved region
+        //reset monitor saved region
         if !locationManager.monitoredRegions.isEmpty {
             if let reg = locationManager.monitoredRegions.first?.identifier , reg == Helper.geoReg {
                 locationManager.stopMonitoring(for: locationManager.monitoredRegions.first!)
             }
         }
     }
-    
-    
     
     
     // MARK: - ACTION METHOD
@@ -53,24 +51,59 @@ class ViewController: UIViewController {
         }
         let set = storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
         set.delegateSetSetting = self
+        set.geo = geoMain
         navigationController?.pushViewController(set, animated: true)
     }
     
+    
+    
     @IBAction func btnStatusClicked(_ sender: UIButton) {
-        var ssid: String?
-        if let interfaces = CNCopySupportedInterfaces() as NSArray? {
-            for interface in interfaces {
-                if let interfaceInfo = CNCopyCurrentNetworkInfo(interface as! CFString) as NSDictionary? {
-                    ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String
-                    break
+        
+        //NOTE - : we can use geoMain.isGeoInside to get status which in turns updated in didExitRegion , didEnterRegion & didDetermineState state:for region - i have implemented these delegate just to show that approach
+        
+        if geoMain.isMonitoring {
+            if let loc = locationManager.location,let rad = geoMain.geoRadius,let lat = geoMain.geolat,let lon = geoMain.geolon  {
+                let coordCentre = CLLocation(latitude: lat, longitude: lon)
+                let distanceInMeters =  coordCentre.distance(from: loc)
+                if Int(distanceInMeters) < rad {
+                    Helper.getAlert(view: self, titletop: "Status - Inside Geo Fence", subtitle: "Geographically Inside the monitoring Region")
+                }else{
+                    
+                    //wifi name
+                    if let wifi = geoMain.wifiName {
+                        
+                        //get connected wifi name
+                        var ssid: String?
+                        if let interfaces = CNCopySupportedInterfaces() as NSArray? {
+                            for interface in interfaces {
+                                if let interfaceInfo = CNCopyCurrentNetworkInfo(interface as! CFString) as NSDictionary? {
+                                    ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String
+                                    break
+                                }
+                            }
+                        }
+                        
+                        
+                        if let ssid_ne = ssid,ssid_ne == wifi{
+                            Helper.getAlert(view: self, titletop: "Status - Inside GeoFence", subtitle: "Geographically Outside the monitoring Region but connected to wifi \(ssid!)")
+                        }else{
+                            Helper.getAlert(view: self, titletop: "Status - Outside GeoFence", subtitle: "Geographically Outside the monitoring Region")
+                        }
+                    }else{
+                        Helper.getAlert(view: self, titletop: "Status - Outside GeoFence", subtitle: "Geographically Outside the monitoring Region")
+                    }
                 }
             }
+        }else{
+            Helper.getAlert(view: self, titletop: "Aler", subtitle: "No Monitoring Region Currently Active.")
         }
-        
-        print("ssid \(ssid ?? "no wifi")")
     }
-    
 }
+
+
+
+
+
 
 
 
@@ -129,11 +162,12 @@ extension ViewController : CLLocationManagerDelegate {
     
     private func setMapViewRegion(last:CLLocationCoordinate2D) {
         var region = MKCoordinateRegion.init(center: last, latitudinalMeters: 100, longitudinalMeters: 100)
+        if let rad = geoMain.geoRadius {
+            region = MKCoordinateRegion.init(center: last, latitudinalMeters: CLLocationDistance(rad*2), longitudinalMeters: CLLocationDistance(rad*2))
+        }
         region = mapView.regionThatFits(region)
         mapView.setRegion(region, animated: true)
     }
-    
-    
     
     // MARK: - LOCATION DELEGATES
     private func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
@@ -147,20 +181,12 @@ extension ViewController : CLLocationManagerDelegate {
     }
     
     
-    
-    
-    
-    
-    
-    
     func locationManager(_ manager: CLLocationManager,  didUpdateLocations locations: [CLLocation]) {
         let lastLocation = locations.last!
         if  !geoMain.isMonitoring {
             setMapViewRegion(last: lastLocation.coordinate)
         }
     }
-    
-    
     
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -171,22 +197,55 @@ extension ViewController : CLLocationManagerDelegate {
     }
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
     func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
-        print("Welcome to Playa Grande! If the waves are good, you can try surfing!")
-        print("monitored reg start \(locationManager.monitoredRegions.count)")
+        
+        //set mk circle on map
+        if region.identifier == Helper.geoReg {
+            geoMain.isMonitoring = true
+            locationManager.requestState(for: region)
+            setMapMonitorRegion(geoMain)
+        }
     }
+    
     
     
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        print("Bye! Hope you had a great day at the beach!")
-        print("monitored reg exit \(locationManager.monitoredRegions.count)")
+        if region.identifier == Helper.geoReg {
+            geoMain.isGeoInside = false
+            print("didExitRegion")
+        }
     }
+    
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        if region.identifier == Helper.geoReg {
+            geoMain.isGeoInside = true
+            print("didEnterRegion")
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
     
     func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
         switch state {
         case .inside:
+            geoMain.isGeoInside = true
             print("inside")
         case .outside:
+            geoMain.isGeoInside = false
             print("outside")
         case .unknown:
             print("unknown")
@@ -264,20 +323,16 @@ extension ViewController:MKMapViewDelegate{
 extension ViewController:SetSettingVCDelegate  {
     func setRegionMonitring(_ geod: GeoMod){
         
-        print("monitored reg i \(locationManager.monitoredRegions.count)")
+        
+        //set model
+        geoMain = geod
+       
+        //monitor region start
         let geoC = CLLocationCoordinate2DMake(geod.geolat!,geod.geolon!)
         let geoRegion = CLCircularRegion(center: geoC, radius: CLLocationDistance(geod.geoRadius!), identifier:Helper.geoReg);
         geoRegion.notifyOnExit = true
         geoRegion.notifyOnEntry = true
         locationManager.startMonitoring(for: geoRegion)
-        locationManager.requestState(for: geoRegion)
-        
-        //set mk circle on map
-        setMapMonitorRegion(geod)
-        
-        //set model
-        geoMain = geod
-        geoMain.isMonitoring = true
     }
 }
 
@@ -319,6 +374,7 @@ extension ViewController  {
         self.present(AC, animated: true, completion:nil)
     }
 }
+
 
 
 

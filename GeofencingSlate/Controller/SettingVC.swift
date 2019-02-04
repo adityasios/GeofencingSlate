@@ -23,12 +23,13 @@ class SettingVC: UITableViewController {
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var lblCentre: UILabel!
     @IBOutlet weak var lblRadius: UILabel!
-    
+    @IBOutlet weak var lblWifi: UILabel!
     
     // MARK: - VC LIFE CYCLE
     override func viewDidLoad() {
         super.viewDidLoad()
         initMethod()
+        setUI()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -48,6 +49,9 @@ class SettingVC: UITableViewController {
     
     private func setMapViewRegion(loc:CLLocationCoordinate2D) {
         var region = MKCoordinateRegion.init(center: loc, latitudinalMeters: 100, longitudinalMeters: 100)
+        if let rad = geo.geoRadius {
+            region = MKCoordinateRegion.init(center: loc, latitudinalMeters: CLLocationDistance(rad*2), longitudinalMeters: CLLocationDistance(rad*2))
+        }
         region = mapView.regionThatFits(region)
         mapView.setRegion(region, animated: true)
     }
@@ -55,7 +59,11 @@ class SettingVC: UITableViewController {
     
     // MARK: - SET UI
     private func setUI() {
+        setMapMonitorRegion()
     }
+    
+    
+    
     
     
     private func sizeHeaderToFit() {
@@ -97,9 +105,10 @@ class SettingVC: UITableViewController {
             set.delegateRadCentre = self
             set.geoPass = geo
             navigationController?.pushViewController(set, animated: true)
+        }else if indexPath.row == 2 {
+            setWifiSettingAlert()
         }
     }
-    
 }
 
 
@@ -132,6 +141,8 @@ extension SettingVC: SetCentreDelegate,SetRadiusDelegate {
             
             if let rad = geo.geoRadius {
                 
+                lblRadius.text = "\(rad) metres"
+                
                 //remove overlays
                 if let overlays = mapView?.overlays {
                     mapView.removeOverlays(overlays)
@@ -142,6 +153,12 @@ extension SettingVC: SetCentreDelegate,SetRadiusDelegate {
                 let mkCir = MKCircle.init(center: loc, radius: CLLocationDistance(rad))
                 mapView.addOverlay(mkCir)
             }
+        }
+        
+        
+        //wifi name
+        if let wifi = geo.wifiName {
+            self.lblWifi.text = wifi
         }
     }
 }
@@ -202,7 +219,33 @@ extension SettingVC : MKMapViewDelegate {
 
 
 
-
+// MARK: - SETTING WIFI
+extension SettingVC  {
+    private func setWifiSettingAlert(){
+        
+        let alertController = UIAlertController(title: "Wifi Name (SSID)", message: "Please enter your wifi name which will be check during monitoring", preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.placeholder = "Wifi SSID"
+            if let wifi = self.geo.wifiName {
+                textField.text = wifi
+            }
+        }
+        
+        let confirmAction = UIAlertAction(title: "OK", style: .default) { [weak alertController] _ in
+            guard let alertController = alertController, let txtfd = alertController.textFields?.first  else { return }
+            if let txt = txtfd.text , txt.count > 0 {
+                self.geo.wifiName = txt
+                self.lblWifi.text = self.geo.wifiName
+            }
+        }
+        alertController.addAction(confirmAction)
+        
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        present(alertController, animated: true, completion: nil)
+    }
+}
 
 
 
